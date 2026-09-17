@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9-сынып Информатика - Интерактивті Тест</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .variant-select {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn.active {
+            background-color: #2e7d32;
+        }
+
+        .btn-submit {
+            background-color: #27ae60;
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            background-color: #219150;
+        }
+
+        .question-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
+
+        .learning-objective {
+            font-size: 13px;
+            color: #7f8c8d;
+            background-color: #eef2f5;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+            background-color: #fff;
+            transition: 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #eef7fe;
+        }
+
+        .option-label input {
+            margin-right: 12px;
+        }
+
+        /* Кері байланыс визуализациясы */
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .correct-bg {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724;
+        }
+
+        .wrong-bg {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24;
+        }
+
+        #result-box {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background-color: #e8f8f5;
+            border: 2px solid #2ecc71;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        #result-box h2 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .score-text {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .score-emoji {
+            font-size: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>9-сынып Информатика Тесті</h1>
+    
+    <!-- Нұсқа таңдау бөлімі -->
+    <div class="variant-select">
+        <button class="btn active" onclick="selectVariant(1)">1-нұсқа</button>
+        <button class="btn" onclick="selectVariant(2)">2-нұсқа</button>
+        <button class="btn" onclick="selectVariant(3)">3-нұсқа</button>
+    </div>
+
+    <!-- Сұрақтар шығатын орын -->
+    <div id="quiz-container"></div>
+
+    <button class="btn btn-submit" id="submit-btn" onclick="checkAnswers()">Тестті аяқтау және нәтижені көру</button>
+
+    <!-- Нәтиже көрсеткіш -->
+    <div id="result-box">
+        <div class="score-emoji" id="final-emoji"></div>
+        <h2>Сіздің нәтижеңіз!</h2>
+        <p class="score-text" id="final-score"></p>
+        <button class="btn" onclick="resetQuiz()">Тестті қайта тапсыру</button>
+    </div>
+</div>
+
+<script>
+    // Тест деректер базасы (3 нұсқа, әр нұсқада 10 сұрақ, оқу мақсаттарымен)
+    const quizData = {
+        1: [
+            {
+                objective: "9.4.2.1 ЖИ салдары (жауапкершілік, әділдік, ашықтық)",
+                question: "1. Жасанды интеллект жүйесі қабылдаған шешімнің себебін пайдаланушыға анық түсіндіре алуы қай принципке жатады?",
+                options: ["Әділдік", "Ашықтық (Explainability)", "Деректер құпиялылығы", "Жауапкершілік"],
+                correct: 1
+            },
+            {
+                objective: "9.4.2.1 ЖИ салдары (жауапкершілік, әділдік, ашықтық)",
+                question: "2. Медицинада ЖИ қате диагноз қойған жағдайда, заңды және моральдық міндеттеме кімге немесе неге жүктеледі?",
+                options: ["ЖИ алгоритміне", "Жүйені әзірлеуші мен дәрігерге", "Компьютерге", "Ешкімге жүктелмейді"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.1 Хаттамалардың қызметі",
+                question: "3. Веб-беттерді шифрланған (қауіпсіз) түрде тасымалдауға арналған хаттаманы көрсетіңіз:",
+                options: ["HTTP", "FTP", "HTTPS", "IP"],
+                correct: 2
+            },
+            {
+                objective: "9.1.2.1 Хаттамалардың қызметі",
+                question: "4. Интернетте файлдарды жіберу және қабылдау үшін қандай хаттама қолданылады?",
+                options: ["FTP", "DNS", "IP", "TCP"],
+                correct: 0
+            },
+            {
+                objective: "9.1.2.2 IP-адрес пен маска арқылы желі мекенжайын анықтау",
+                question: "5. IP-адресі 192.168.1.15, маскасы 255.255.255.0 болатын түйіннің желі мекенжайы қандай?",
+                options: ["192.168.1.0", "192.168.0.0", "192.168.1.255", "192.168.1.1"],
+                correct: 0
+            },
+            {
+                objective: "9.1.2.2 IP-адрес пен маска арқылы желі мекенжайын анықтау",
+                question: "6. Түйіннің IP-адресі мен маскасы берілгенде желі мекенжайын табу үшін қандай логикалық операция қолданылады?",
+                options: ["Логикалық қосу (OR)", "Логикалық көбейту (AND)", "Логикалық терістеу (NOT)", "XOR"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.3 DNS құрылымы мен мақсаты",
+                question: "7. DNS (Domain Name System) қызметінің басты мақсаты не?",
+                options: ["Файлдарды жүктеу", "Домендік атауларды IP-адрестерге түрлендіру", "Компьютерді вирустан қорғау", "Электрондық пошта жіберу"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.3 DNS құрылымы мен мақсаты",
+                question: "8. '.kz', '.edu', '.com' сияқты домендік атау бөліктері DNS иерархиясының қай деңгейіне жатады?",
+                options: ["Түбірлік деңгей", "Жоғарғы деңгейлі домен (TLD)", "Екінші деңгейлі домен", "Үшінші деңгейлі домен"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.4 Желінің өткізу қабілеті",
+                question: "9. Желі арқылы 5 секундта 50 Мбит деректер берілді. Желінің өткізу қабілеті қандай?",
+                options: ["10 Мбит/с", "250 Мбит/с", "5 Мбит/s", "50 Мбит/с"],
+                correct: 0
+            },
+            {
+                objective: "9.1.2.4 Желінің өткізу қабілеті",
+                question: "10. Көлемі 10 Мбайт файлды өткізу қабілеті 8 Мбит/с желі арқылы жүктеуге қанша уақыт кетеді?",
+                options: ["1.25 секунд", "10 секунд", "80 секунд", "10 минут"],
+                correct: 1
+            }
+        ],
+        2: [
+            {
+                objective: "9.4.2.1 ЖИ салдары (жауапкершілік, әділдік, ашықтық)",
+                question: "1. ЖИ жүйесінің дискриминацияға (нәсілдік, жыныстық) жол бермеуін қамтамасыз ету қай принципке сәйкес келеді?",
+                options: ["Жауапкершілік", "Әділдік (Fairness)", "Өткізу қабілеті", "Ашықтық"],
+                correct: 1
+            },
+            {
+                objective: "9.4.2.1 ЖИ салдары (жауапкершілік, әділдік, ашықтық)",
+                question: "2. Қаржы саласында (банкте) ЖИ клиентке несие беруден бас тартқанда, Себебін түсіндіру қай талапқа жатады?",
+                options: ["Ашықтық", "Тартылыс", "Автоматтандыру", "Шифрлау"],
+                correct: 0
+            },
+            {
+                objective: "9.1.2.1 Хаттамалардың қызметі",
+                question: "3. Деректер пакеттерінің сенімді жеткізілуін және реттілігін қамтамасыз ететін хаттама қайсысы?",
+                options: ["IP", "TCP", "UDP", "HTTP"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.1 Хаттамалардың қызметі",
+                question: "4. Интернетте әрбір құрылғыны бірегей мекенжайлауды жүзеге асыратын базалық хаттама:",
+                options: ["IP", "FTP", "DNS", "HTTPS"],
+                correct: 0
+            },
+            {
+                objective: "9.1.2.2 IP-адрес пен маска арқылы желі мекенжайын анықтау",
+                question: "5. Маскасы 255.255.0.0 болғанда, IP-адрестің қай бөлігі желі мекенжайын білдіреді?",
+                options: ["Алғашқы 1 октет", "Алғашқы 2 октет", "Алғашқы 3 октет", "Барлық 4 октет"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.2 IP-адрес пен маска арқылы желі мекенжайын анықтау",
+                question: "6. IPv4 мекенжайы неше биттен тұрады?",
+                options: ["16 бит", "32 бит", "64 бит", "128 бит"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.3 DNS құрылымы мен мақсаты",
+                question: "7. 'mail.google.com' мекенжайындағы 'mail' сөзі қай деңгейдегі доменге жатады?",
+                options: ["Жоғарғы деңгей", "Екінші деңгей", "Үшінші (ішкі) деңгей", "Түбірлік домен"],
+                correct: 2
+            },
+            {
+                objective: "9.1.2.3 DNS құрылымы мен мақсаты",
+                question: "8. Төмендегілердің қайсысы ұлттық жоғарғы деңгейлі доменге (ccTLD) жатады?",
+                options: [".com", ".org", ".kz", ".net"],
+                correct: 2
+            },
+            {
+                objective: "9.1.2.4 Желінің өткізу қабілеті",
+                question: "9. Ақпаратты беру жылдамдығы әдетте қандай бірлікпен өлшенеді?",
+                options: ["Байт", "Мбит/с (бит/сек)", "Мбайт", "Гбайт"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.4 Желінің өткізу қабілеті",
+                question: "10. Жылдамдығы 16 Мбит/с арна арқылы 2 секундта қанша мегабайт (Мбайт) ақпарат беруге болады?",
+                options: ["32 Мбайт", "4 Мбайт", "8 Мбайт", "16 Мбайт"],
+                correct: 1
+            }
+        ],
+        3: [
+            {
+                objective: "9.4.2.1 ЖИ салдары (жауапкершілік, әділдік, ашықтық)",
+                question: "1. Әлеуметтік желілерде ЖИ қолданудың қандай теріс салдары болуы мүмкін?",
+                options: ["Жалған ақпараттың (дипфейк) тез таралуы", "Интернет жылдамдығының төмендеуі", "Компьютердің бұзылуы", "Файлдардың өшірілуі"],
+                correct: 0
+            },
+            {
+                objective: "9.4.2.1 ЖИ салдары (жауапкершілік, әділдік, ашықтық)",
+                question: "2. Білім беруде ЖИ жүйесі оқушылардың білімін бағалағанда ешқандай бұрмалаусыз, біркелкі қарауды қамтамасыз ету қай принцип?",
+                options: ["Әділдік", "Ашықтық", "Жауапкершілік", "Құпиялылық"],
+                correct: 0
+            },
+            {
+                objective: "9.1.2.1 Хаттамалардың қызметі",
+                question: "3. Веб-браузер мен веб-сервер арасында мәлімет алмасуға арналған негізгі хаттама:",
+                options: ["HTTP", "FTP", "IP", "DNS"],
+                correct: 0
+            },
+            {
+                objective: "9.1.2.1 Хаттамалардың қызметі",
+                question: "4. HTTPS хаттамасындағы 'S' әрпі нені білдіреді?",
+                options: ["Speed (Жылдам)", "Secure (Қауіпсіз/Шифрланған)", "System (Жүйе)", "Server (Сервер)"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.2 IP-адрес пен маска арқылы желі мекенжайын анықтау",
+                question: "5. IP-адрестегі 255.255.255.0 маскасы 2-лік жүйеде қалай жазылады?",
+                options: ["24 бірлік және 8 ноль", "16 бірлік және 16 ноль", "8 бірлік және 24 ноль", "Барлығы бірлік"],
+                correct: 0
+            },
+            {
+                objective: "9.1.2.2 IP-адрес пен маска арқылы желі мекенжайын анықтау",
+                question: "6. Төмендегі қай мекенжай стандартты IPv4 адресінің дұрыс пішімі болып табылады?",
+                options: ["192.168.1.300", "10.0.0.1", "256.100.0.1", "172.16.256.5"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.3 DNS құрылымы мен мақсаты",
+                question: "7. Компьютер серверге атау арқылы сұраныс жібергенде оған жауап беретін арнайы сервер қалай аталады?",
+                options: ["FTP сервер", "DNS сервер", "Web сервер", "File сервер"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.3 DNS құрылымы мен мақсаты",
+                question: "8. Төмендегі домендердің қайсысы білім беру ұйымдарына арналған?",
+                options: [".gov", ".com", ".edu", ".mil"],
+                correct: 2
+            },
+            {
+                objective: "9.1.2.4 Желінің өткізу қабілеті",
+                question: "9. Желінің өткізу қабілетіне қандай фактор кері әсерін тигізуі мүмкін?",
+                options: ["Жоғары жиілікті кабель", "Желідегі түйіндердің/пайдаланушылардың шамадан тыс көптігі", "Сервердің жылдамдығы", "Сапалы роутер"],
+                correct: 1
+            },
+            {
+                objective: "9.1.2.4 Желінің өткізу қабілеті",
+                question: "10. 100 Мбит/с жылдамдықпен 1 секундта теориялық тұрғыда қанша мегабайт жүктеуге болады?",
+                options: ["100 Мбайт", "12.5 Мбайт", "50 Мбайт", "8 Мбайт"],
+                correct: 1
+            }
+        ]
+    };
+
+    let currentVariant = 1;
+    let userAnswers = {};
+
+    // Бет жүктелгенде тестті шығару
+    window.onload = function() {
+        renderQuiz();
+    };
+
+    // Нұсқаны ауыстыру
+    function selectVariant(variant) {
+        currentVariant = variant;
+        
+        // Түймелердің белсенділігін өзгерту
+        const buttons = document.querySelectorAll('.variant-select .btn');
+        buttons.forEach((btn, idx) => {
+            if (idx + 1 === variant) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        resetQuiz();
+    }
+
+    // Тестті экранға шығару
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+        const questions = quizData[currentVariant];
+
+        questions.forEach((q, qIndex) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `q-card-${qIndex}`;
+
+            let optionsHTML = '';
+            q.options.forEach((opt, oIndex) => {
+                optionsHTML += `
+                    <label class="option-label" id="label-${qIndex}-${oIndex}">
+                        <input type="radio" name="question-${qIndex}" value="${oIndex}" onchange="registerAnswer(${qIndex}, ${oIndex})">
+                        ${opt}
+                    </label>
+                `;
+            });
+
+            card.innerHTML = `
+                <div class="learning-objective">Оқу мақсаты: ${q.objective}</div>
+                <div class="question-text">${q.question}</div>
+                <div class="options">${optionsHTML}</div>
+                <div class="feedback" id="feedback-${qIndex}"></div>
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    // Тұтынушының жауабын белгілеу және оған бірден смайлик көрсету
+    function registerAnswer(qIndex, selectedOption) {
+        userAnswers[qIndex] = selectedOption;
+        const correctOption = quizData[currentVariant][qIndex].correct;
+        const feedbackDiv = document.getElementById(`feedback-${qIndex}`);
+
+        // Жауап берілсе, бірден тексеріп смайлик көрсету
+        feedbackDiv.style.display = 'flex';
+        if (selectedOption === correctOption) {
+            feedbackDiv.innerHTML = `<span>😊 Өте жақсы! Дұрыс жауап!</span>`;
+            feedbackDiv.style.color = '#27ae60';
+        } else {
+            feedbackDiv.innerHTML = `<span>😔 Әттеген-ай, қате! Дұрыс жауабын ойланып көріңіз.</span>`;
+            feedbackDiv.style.color = '#e74c3c';
+        }
+    }
+
+    // Барлық жауаптарды тексеру және соңғы нәтижені шығару
+    function checkAnswers() {
+        const questions = quizData[currentVariant];
+        let score = 0;
+
+        questions.forEach((q, qIndex) => {
+            const selected = userAnswers[qIndex];
+            const feedbackDiv = document.getElementById(`feedback-${qIndex}`);
+
+            q.options.forEach((_, oIndex) => {
+                const label = document.getElementById(`label-${qIndex}-${oIndex}`);
+                label.classList.remove('correct-bg', 'wrong-bg');
+
+                if (oIndex === q.correct) {
+                    label.classList.add('correct-bg'); // Дұрыс жауапты жасылмен белгілеу
+                }
+                if (selected === oIndex && selected !== q.correct) {
+                    label.classList.add('wrong-bg'); // Қате жауапты қызылмен белгілеу
+                }
+            });
+
+            if (selected === q.correct) {
+                score++;
+            }
+        });
+
+        // Соңғы нәтижені көрсету
+        const resultBox = document.getElementById('result-box');
+        const scoreText = document.getElementById('final-score');
+        const emojiDiv = document.getElementById('final-emoji');
+
+        resultBox.style.display = 'block';
+        scoreText.innerText = `Сіз 10 сұрақтың ${score} сұрағына дұрыс жауап бердіңіз!`;
+
+        if (score >= 9) {
+            emojiDiv.innerText = "🏆 🎉 🌟";
+            scoreText.innerHTML += "<br><strong>Өте үздік нәтиже! Жарайсың!</strong>";
+        } else if (score >= 7) {
+            emojiDiv.innerText = "👍 😊 ✨";
+            scoreText.innerHTML += "<br><strong>Жақсы нәтиже! Тағы да іздене түс!</strong>";
+        } else if (score >= 5) {
+            emojiDiv.innerText = "😐 📚";
+            scoreText.innerHTML += "<br><strong>Орташа нәтиже. Тақырыпты қайталап шығу ұсынылады.</strong>";
+        } else {
+            emojiDiv.innerText = "😢 📖 💡";
+            scoreText.innerHTML += "<br><strong>Төмен нәтиже. Материалды қайта оқып тапсыруды кеңес береміз!</strong>";
+        }
+
+        // Бетті нәтиже тұсына ақырын айналдыру
+        resultBox.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Тестті қайта бастау
+    function resetQuiz() {
+        userAnswers = {};
+        document.getElementById('result-box').style.display = 'none';
+        renderQuiz();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
+   
